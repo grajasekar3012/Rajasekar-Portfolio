@@ -88,32 +88,36 @@
     revealEls.forEach(function (el) { el.classList.add('is-visible'); });
   }
 
-  /* ---------- Subtle project image movement while scrolling ---------- */
-  const motionImages = document.querySelectorAll('.portfolio-home .project-visual img');
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let motionTicking = false;
+  /* ---------- About statistics count-up ---------- */
+  const countNumbers = document.querySelectorAll('.about-band [data-count]');
 
-  function updateScrollMotion() {
-    const viewportCenter = window.innerHeight / 2;
-    motionImages.forEach(function (img) {
-      const rect = img.parentElement.getBoundingClientRect();
-      if (rect.bottom > 0 && rect.top < window.innerHeight) {
-        const elementCenter = rect.top + rect.height / 2;
-        const shift = Math.max(-10, Math.min(10, (viewportCenter - elementCenter) * 0.025));
-        img.style.setProperty('--scroll-shift', shift.toFixed(2));
-      }
-    });
-    motionTicking = false;
+  function animateCount(el) {
+    const target = Number(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1200;
+    const startTime = performance.now();
+
+    function updateCount(now) {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased) + suffix;
+      if (progress < 1) window.requestAnimationFrame(updateCount);
+    }
+
+    window.requestAnimationFrame(updateCount);
   }
 
-  if (motionImages.length && !reduceMotion) {
-    updateScrollMotion();
-    window.addEventListener('scroll', function () {
-      if (!motionTicking) {
-        window.requestAnimationFrame(updateScrollMotion);
-        motionTicking = true;
-      }
-    }, { passive: true });
+  if (countNumbers.length && !window.matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    countNumbers.forEach(function (el) { el.textContent = '0' + (el.dataset.suffix || ''); });
+    const countObserver = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          animateCount(entry.target);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    countNumbers.forEach(function (el) { countObserver.observe(el); });
   }
 
   /* ---------- Image fallback handling ---------- */
@@ -216,7 +220,14 @@
         const target = document.querySelector(targetId);
         if (target) {
           e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (targetId === '#top') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
+          const headerOffset = header ? header.getBoundingClientRect().height + 24 : 24;
+          const targetPaddingTop = parseFloat(window.getComputedStyle(target).paddingTop) || 0;
+          const targetTop = target.getBoundingClientRect().top + window.scrollY + targetPaddingTop - headerOffset;
+          window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
         }
       }
     });

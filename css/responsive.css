@@ -7,8 +7,8 @@
 
 @media (max-width: 800px) {
   .portfolio-home .hero { min-height: auto; padding-top: 116px; padding-bottom: 40px; }
-  .portfolio-home .hero-headline { font-size: clamp(2.6rem, 12vw, 3.2rem); line-height: 1.04; max-width: 100%; }
-  .portfolio-home .accent-word { display: block; }
+  .portfolio-home .hero-headline { font-size: clamp(1.25rem, 6vw, 3.2rem); line-height: 1.08; max-width: 100%; }
+  .portfolio-home .accent-word { display: inline; }
   .portfolio-home .hero-bottom { margin-top: 28px; }
   .portfolio-home .hero-body { font-size: 1rem; }
   .portfolio-home .hero-actions { flex-direction: column; }
